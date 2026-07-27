@@ -1,0 +1,50 @@
+# MATLAB 相关文件
+*.asv
+*.m~.
+*.mlx~
+
+# MATLAB 自动生成的文件
+*.mexa64
+*.mexw32
+*.mexw64
+*.mexmaci64
+*.mexglx
+*.mexa64
+
+# Simulink 缓存文件
+*.slx.*
+*.slxc
+
+# 工作区和设置文件
+*.mat
+*.fig
+*.prj
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.temp
+
+# 操作系统文件
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 结果输出文件
+result_*.mat
+figure_*.png
+figure_*.jpg
+figure_*.fig
+
+# 备份文件
+backup/
+*.bak
