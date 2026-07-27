@@ -5,6 +5,20 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 并遵循 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## [v1.1.1] - 2026-07-27
+
+### 新增
+
+- **Python v1.1 移植版** `python_v1.1/ga_v11.py` - 将 MATLAB v1.1 代码原封不动移植到 Python，支持 NumPy 向量化计算与 Matplotlib 可视化
+
+### 变更
+
+- **仓库结构重组** - 按版本和语言重新分类整理文件：
+  - `matlab_v1.0/` - 原始 MATLAB v1.0 经典版（17 个 .m 文件）
+  - `matlab_v1.1/` - 优化 MATLAB v1.1 版（15 个 .m 文件）
+  - `python_v1.1/` - Python v1.1 移植版（`ga_v11.py` 单文件完整实现）
+- 删除根目录下所有冗余的 `.m` 文件，避免与分类目录重复
+
 ## [v1.1.0] - 2026-07-27
 
 ### 新增
@@ -74,5 +88,6 @@
 
 ---
 
+[v1.1.1]: https://github.com/MUNJayLee/GAtest/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/MUNJayLee/GAtest/releases/tag/v1.1.0
 [v1.0.0]: https://github.com/MUNJayLee/GAtest/releases/tag/v1.0.0
