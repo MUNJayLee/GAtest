@@ -1,9 +1,10 @@
 # GAtest - 海铁联运班列调度遗传算法优化
 
-> 基于遗传算法（Genetic Algorithm）的集装箱海铁联运班列调度优化系统，使用 MATLAB 实现。
+> 基于遗传算法（Genetic Algorithm）的集装箱海铁联运班列调度优化系统，提供 MATLAB 与 Python 双语言实现。
 
 [![Version](https://img.shields.io/badge/version-v1.1.0-blue)](https://github.com/MUNJayLee/GAtest/releases)
 [![MATLAB](https://img.shields.io/badge/MATLAB-R2016b%2B-orange)](https://www.mathworks.com/)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 
 ## 项目简介
 
@@ -25,70 +26,112 @@
 - **发车间隔约束**：相邻班列发车间隔不小于最小间隔时间
 - **转运时间约束**：集装箱从卸船到装车需满足最小转运时间
 
-## 版本选择
+## 版本与语言选择
 
-本项目提供两个版本：
+本项目按版本和语言进行组织：
 
-| 版本 | 特点 | 适用场景 |
-|-----|------|---------|
-| **v1.0 (经典版)** | 全局变量架构，简单直观 | 学习理解算法原理 |
-| **v1.1 (优化版)** | 参数结构体，自适应参数，性能优化 | 生产环境使用 |
+| 目录 | 版本 | 语言 | 特点 | 适用场景 |
+|-----|------|------|------|---------|
+| `matlab_v1.0/` | v1.0 | MATLAB | 全局变量架构，简单直观 | 学习理解算法原理 |
+| `matlab_v1.1/` | v1.1 | MATLAB | 参数结构体，自适应参数，性能优化 | MATLAB 生产环境 |
+| `python_v1.1/` | v1.1 | Python | 原封不动移植自 MATLAB v1.1 | Python 环境使用 |
 
 ## 项目结构
 
-### v1.1 优化版（推荐）
-
 ```
 GAtest/
-├── GA_v11.m              # v1.1 主程序入口（推荐）
-├── config.m              # 参数配置中心
-├── utils.m               # 工具函数集
-├── adaptiveParams.m      # 自适应参数调整
-├── fitness_v11.m         # 优化版适应度函数（向量化）
-├── assign_v11.m          # 优化版集装箱分配
-├── initialize_v11.m      # 优化版种群初始化
-├── selection_v11.m       # 优化版选择（锦标赛）
-├── crossover_v11.m       # 优化版交叉（约束修复）
-├── mutation_v11.m        # 优化版变异（多策略）
-├── constraints_v11.m     # 优化版约束检验
-├── rank_v11.m            # 优化版排序
-├── result_v11.m          # 优化版结果输出
-├── plotConvergence.m     # 收敛分析可视化
-├── GA.m                  # v1.0 经典版主程序
-├── ...                   # v1.0 其他文件
+├── matlab_v1.0/          # MATLAB v1.0 经典版
+│   ├── GA.m
+│   ├── fitness.m
+│   ├── assign.m
+│   ├── initialize.m
+│   ├── selection.m
+│   ├── crossover.m
+│   ├── mutation.m
+│   ├── constraints.m
+│   ├── rank.m
+│   ├── result.m
+│   ├── readC.m
+│   ├── caltrains.m
+│   ├── insert.m
+│   ├── plotAVGFIT.m
+│   ├── plotBESTFIT.m
+│   ├── plotBESTFIT2.m
+│   ├── plotBESTFIT3.m
+│   └── plotYARD.m
+├── matlab_v1.1/          # MATLAB v1.1 优化版
+│   ├── GA_v11.m
+│   ├── config.m
+│   ├── utils.m
+│   ├── adaptiveParams.m
+│   ├── fitness_v11.m
+│   ├── assign_v11.m
+│   ├── initialize_v11.m
+│   ├── selection_v11.m
+│   ├── crossover_v11.m
+│   ├── mutation_v11.m
+│   ├── constraints_v11.m
+│   ├── rank_v11.m
+│   ├── result_v11.m
+│   └── plotConvergence.m
+├── python_v1.1/          # Python v1.1 移植版
+│   └── ga_v11.py         # 单文件完整实现
 ├── README.md             # 项目文档
 ├── CHANGELOG.md          # 更新日志
-├── .gitignore            # Git忽略配置
+├── .gitignore            # Git 忽略配置
 └── 数据集.xlsx            # 输入数据文件
 ```
 
 ## 快速开始
 
-### 环境要求
+### MATLAB 版本
+
+#### 环境要求
 
 - MATLAB R2016b 或更高版本
-- 需支持以下工具箱：
-  - 基础 MATLAB 环境
-  - （可选）优化工具箱
 
-### 运行步骤
+#### 运行步骤
 
 1. 克隆或下载本项目到本地
-2. 将 MATLAB 当前工作目录切换到项目文件夹
-3. 确保 `数据集.xlsx` 文件位于同一目录下
-4. 选择版本运行：
+2. 将 MATLAB 当前工作目录切换到对应版本文件夹（`matlab_v1.0/` 或 `matlab_v1.1/`）
+3. 将 `数据集.xlsx` 复制到该文件夹内
+4. 运行主程序：
 
 ```matlab
-% 推荐：运行 v1.1 优化版
+% v1.1 优化版（推荐）
+cd matlab_v1.1
 GA_v11
 
-% 或运行 v1.0 经典版
+% v1.0 经典版
+cd matlab_v1.0
 GA
+```
+
+### Python 版本
+
+#### 环境要求
+
+- Python 3.8 或更高版本
+- 依赖包：`numpy`, `pandas`, `matplotlib`, `scipy`, `openpyxl`
+
+#### 运行步骤
+
+1. 安装依赖：
+
+```bash
+pip install numpy pandas matplotlib scipy openpyxl
+```
+
+2. 进入 Python 版本目录并运行：
+
+```bash
+cd python_v1.1
+python ga_v11.py
 ```
 
 ### 输出结果
 
-**v1.1 增强输出：**
+**v1.1 增强输出（MATLAB / Python）：**
 
 1. **收敛分析面板** - 6合1图表（适应度曲线、改善率、多样性、三目标收敛）
 2. **自适应参数曲线** - 展示交叉率和变异率的动态调整
@@ -102,7 +145,7 @@ GA
 
 | 改进项 | v1.0 | v1.1 |
 |-------|------|------|
-| 参数管理 | 全局变量 | 参数结构体 `config.m` |
+| 参数管理 | 全局变量 | 参数结构体 `config.m` / `Config` 类 |
 | 代码复用 | 无 | 工具函数集 `utils.m` |
 | 可维护性 | 低 | 高 |
 
@@ -174,7 +217,7 @@ GA
 ```
 开始
   ↓
-加载配置 (config)
+加载配置 (config / Config)
   ↓
 读取数据集 (readC_v11)
   ↓
@@ -221,12 +264,14 @@ GA
 - 新增自适应遗传算法 `adaptiveParams.m`
 - 新增工具函数集 `utils.m`
 - 新增增强可视化 `plotConvergence.m`
-- 全套优化版核心算法（v11后缀）
+- 全套优化版核心算法（v11 后缀）
 - 参数结构体替代全局变量
 - 锦标赛选择替代轮盘赌
 - 向量化计算优化
 - 自动约束修复机制
 - 种群规模 20→40，迭代代数 10→50
+- **Python v1.1 移植版** - 原封不动移植到 Python，单文件 `ga_v11.py` 实现
+- **仓库结构重组** - 按版本和语言分类整理为 `matlab_v1.0/`、`matlab_v1.1/`、`python_v1.1/`
 
 ### v1.0.0 (2026-07-27)
 
