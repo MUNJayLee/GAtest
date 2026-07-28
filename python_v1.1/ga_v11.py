@@ -671,6 +671,122 @@ def adaptiveParams(fitness_history, cfg, G):
 
 
 # ============================================================
+# 堆场堆存动态曲线（总箱量 + 各方向箱量） - _plot_yard_curve
+# ============================================================
+def _plot_yard_curve(bestx_jdt, besty_ijdc, bestC_JD, cfg, data):
+    """绘制最优解下堆场中各方向集装箱及总箱量随时间变化的曲线"""
+    T_max = cfg.T_max
+    C_max = data['C_max']
+    D0 = cfg.D0
+    num_dirs = len(D0)
+
+    C_IDT_dir = data['C_IDT'][2, :]  # 每个集装箱的方向
+    C_IDT_ti = data['C_IDT'][3, :]   # 每个集装箱的到港时间
+    protoC_TI = data['protoC_TI'].flatten()
+
+    # ---- 收集所有事件 (时间, 方向, 增减量) ----
+    # 班轮到港 -> 堆场增加（按方向统计每艘班轮的集装箱数）
+    arrival_events = []
+    unique_arrivals = np.unique(protoC_TI)
+    for arr_time in unique_arrivals:
+        for d in D0:
+            count_d = np.sum((C_IDT_dir == d) & (np.isclose(C_IDT_ti, arr_time)))
+            if count_d > 0:
+                arrival_events.append((int(arr_time), int(d), count_d))
+
+    # 班列发车 -> 堆场减少（按方向统计每列班列运走的各方向箱量）
+    train_times = np.where(bestx_jdt != 0)[0]  # 发车时刻索引(0-based，也是时间)
+    train_dirs = bestx_jdt[train_times].astype(int)  # 每列班列的方向
+
+    departure_events = []
+    # 找到实际使用的班列编号
+    used_trains = set(besty_ijdc[besty_ijdc > 0])
+    for j_idx in range(1, int(max(used_trains)) + 1):
+        # 该班列的集装箱
+        containers_on_train_j = np.where(besty_ijdc == j_idx)[0]
+        if len(containers_on_train_j) == 0:
+            continue
+        # 该班列的出发时间
+        if j_idx - 1 < len(train_times):
+            dep_time = int(train_times[j_idx - 1])
+            dep_dir = int(train_dirs[j_idx - 1])
+        else:
+            continue
+        # 按方向统计
+        for d in D0:
+            count_d = np.sum(C_IDT_dir[containers_on_train_j] == d)
+            if count_d > 0:
+                departure_events.append((dep_time, int(d), count_d))
+
+    # ---- 构建各方向的时间序列 ----
+    dir_colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12']
+    dir_labels = [f'方向{d}' for d in D0]
+
+    # 合并所有事件并排序
+    all_events = []
+    for t, d, delta in arrival_events:
+        all_events.append((t, d, delta, 'arrival'))
+    for t, d, delta in departure_events:
+        all_events.append((t, d, delta, 'departure'))
+
+    # 对每个方向分别构建堆场箱量曲线
+    time_points = sorted(set(
+        [e[0] for e in all_events] + [0, T_max]
+    ))
+
+    # 先计算每个方向在每个时间点的箱量
+    dir_stock = {d: np.zeros(len(time_points)) for d in D0}
+    dir_cumsum = {d: 0 for d in D0}
+
+    for idx_t, t in enumerate(time_points):
+        for evt_t, evt_d, delta, evt_type in all_events:
+            if evt_t == t:
+                if evt_type == 'arrival':
+                    dir_cumsum[evt_d] += delta
+                else:
+                    dir_cumsum[evt_d] -= delta
+        # 在这个时间点记录各方向箱量
+        for d in D0:
+            dir_stock[d][idx_t] = dir_cumsum[d]
+
+    total_stock = sum(dir_stock[d] for d in D0)
+
+    # ---- 绘图 ----
+    fig, axes = plt.subplots(2, 1, figsize=(14, 10), gridspec_kw={'height_ratios': [3, 2]})
+    fig.suptitle('最优解 - 堆场堆存动态曲线', fontsize=14, fontweight='bold')
+
+    # 上图：总箱量
+    ax1 = axes[0]
+    ax1.fill_between(time_points, total_stock, alpha=0.3, color='#2c3e50')
+    ax1.plot(time_points, total_stock, color='#2c3e50', linewidth=2, label='总箱量')
+    ax1.axhline(y=cfg.Yardcap, color='red', linestyle='--', linewidth=1, label=f'堆场容量 ({cfg.Yardcap})')
+    ax1.set_xlabel('时间 (小时)', fontsize=11)
+    ax1.set_ylabel('集装箱数量 (TEU)', fontsize=11)
+    ax1.set_title('堆场总箱量变化', fontsize=12)
+    ax1.legend(loc='upper right', fontsize=10)
+    ax1.grid(True, alpha=0.3)
+    ax1.set_xlim(0, T_max)
+    ax1.set_ylim(bottom=0)
+
+    # 下图：各方向箱量
+    ax2 = axes[1]
+    for i, d in enumerate(D0):
+        ax2.plot(time_points, dir_stock[d], color=dir_colors[i], linewidth=1.5, label=dir_labels[i])
+        ax2.fill_between(time_points, dir_stock[d], alpha=0.1, color=dir_colors[i])
+    ax2.set_xlabel('时间 (小时)', fontsize=11)
+    ax2.set_ylabel('集装箱数量 (TEU)', fontsize=11)
+    ax2.set_title('各方向箱量变化', fontsize=12)
+    ax2.legend(loc='upper right', fontsize=10)
+    ax2.grid(True, alpha=0.3)
+    ax2.set_xlim(0, T_max)
+    ax2.set_ylim(bottom=0)
+
+    plt.tight_layout()
+    plt.savefig('yard_curve.png', dpi=150)
+    plt.close()
+
+
+# ============================================================
 # 结果输出 - result_v11
 # ============================================================
 def result_v11(best_individual, best_TT, cfg, data):
@@ -746,17 +862,9 @@ def result_v11(best_individual, best_TT, cfg, data):
     print(f"综合适应度:    {1.0 / (cfg.w_time * fit1 + cfg.w_cost * fit2 + cfg.w_carbon * fit3):.6f}")
     print("=" * 50)
 
-    # 绘制堆场曲线
-    plt.figure(figsize=(10, 5))
-    bestTT = best_TT[best_TT > 0]
+    # 绘制堆场曲线（总箱量 + 各方向箱量）
+    _plot_yard_curve(bestx_jdt, besty_ijdc, bestC_JD, cfg, data)
 
-    plt.title('最优解 - 堆场堆存动态曲线')
-    plt.xlabel('时间 (小时)')
-    plt.ylabel('集装箱数量')
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig('yard_curve.png', dpi=150)
-    plt.close()
     print("堆场曲线已保存: yard_curve.png")
 
 
